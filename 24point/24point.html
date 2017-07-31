@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>demo24</title>
+  <script type='text/javascript' src='http://code.jquery.com/jquery-1.6.4.js'></script>
+</head>
+<body>
+  <body>
+  <div>
+    <p>编程题：计算24点</p>
+    <p>给定任意4个正整数，利用加，减，乘，除，括号这几个运算符，编程计算所有由这4个数字计算出24的表达式，并输出计算表达式。</p>
+    <p>输出结果要求：加法，乘法需要去重，(( a + b ) * c)  / d = 24 和 (( b + a) * c ) / d = 24 视为同一表达式，只输出任意一个即可。</p> 
+
+  </div>
+  <div>
+    目标数：<input id="dest" value="24"/>
+    数组：<input id="inputs" value="10,10,4,4"/><input type="button" id="go" value="计算吧!"/>
+</div>
+<br>
+<textarea id="outputs" style="height:200px;"></textarea>
+</body>
+<script type='text/javascript'>//<![CDATA[ 
+$(window).load(function(){
+function searchExpression(dest, numbers) {
+    if (!numbers) return;
+    var precision = 1e-6; // 精度
+    var dict = {};
+	var n = numbers.length;
+    
+    function search(numbers, expressions, level, dest, outputs) {
+        var result;
+        if ((level <= 1) && (Math.abs(numbers[0] - dest) <= precision)) {
+            !dict[expressions[0]] && outputs.push(expressions[0].substring(1,expressions[0].length-1)+"="+dest);
+            dict[expressions[0]] = true;
+            return true;
+        }
+        for (var i = 0; i < level; i++) {
+            for (var j = i + 1; j < level; j++) {
+			
+                var A = numbers[i];
+                var B = numbers[j];
+                numbers[j] = numbers[level - 1];
+				
+                var vExpA = expressions[i];
+                var vExpB = expressions[j];
+                expressions[j] = expressions[level - 1];
+				
+				
+                expressions[i] = '(' + vExpA + '+' + vExpB + ')';
+                numbers[i] = A + B;
+                
+				
+				if((typeof vExpB) == 'number'){
+				if (search(numbers, expressions,
+                    level - 1, dest, outputs)) {result = true;}
+					}
+					
+                expressions[i] = '(' + vExpA + '-' + vExpB + ')';
+                numbers[i] = A - B;
+                if (search(numbers, expressions,
+                    level - 1, dest, outputs)) result = true;
+					
+                expressions[i] = '(' + vExpB + '-' + vExpA + ')';
+                numbers[i] = B - A;
+                if (search(numbers, expressions,
+                    level - 1, dest, outputs)) result = true;
+					
+                expressions[i] = '(' + vExpA + '*' + vExpB + ')';
+                numbers[i] = A * B;
+				if(vExpB=='((6/3)+6)'){
+					console.log(expressions[i]);
+					console.log(i,j);
+				}
+				if((typeof vExpB) == 'number'){
+                if (search(numbers, expressions,
+                    level - 1, dest, outputs))
+					{result = true;}
+					}
+                if (B != 0) {
+                    expressions[i] = '(' + vExpA + '/' + vExpB + ')';
+                    numbers[i] = A / B;
+                    if (search(numbers, expressions,
+                        level - 1, dest, outputs)) result = true;
+                }
+                if (A != 0) {
+                    expressions[i] = '(' + vExpB + '/' + vExpA + ')';
+                    numbers[i] = B / A;
+                    if (search(numbers, expressions,
+                        level - 1, dest, outputs)) result = true;
+                }
+                numbers[i] = A;
+                numbers[j] = B;
+                expressions[i] = vExpA;
+                expressions[j] = vExpB;
+            }
+        }
+        return result;
+    }
+    
+    if (typeof numbers == "string") {
+        numbers = numbers.split(/[\s,;g]+/);
+    }
+
+    var expressions = [];
+    var outputs = [];
+    for (var i = 0; i < numbers.length; i++) {
+        numbers[i] = +numbers[i];
+        expressions.push(numbers[i]);
+    }
+    search(numbers, expressions, numbers.length, dest, outputs);
+    if(outputs=="") {outputs=["无解"]};
+    return outputs;
+}
+$("#go").click(function() {
+    var outputs = searchExpression(+$("#dest").val(), $("#inputs").val());
+    $("#outputs").val(outputs && outputs.join("\n"));
+});
+});//]]>  
+</script>
+</html>
